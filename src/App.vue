@@ -24,7 +24,7 @@
 
       data(){
         return{
-            seller:{}
+          seller :{}
         }
       },
     created(){
@@ -33,10 +33,12 @@
     methods:{
       getData(){
         getGoods().then((res)=>{
-          if(res.error==ERROR){
+          if(res.errno==ERROR){
             this.seller = res.data;
           }
 
+        }).catch((err)=>{
+          console.log(err);
         })
       }
     },
@@ -52,7 +54,6 @@
     height: 40px
     line-height: 40px
     border-1px(rgba(7, 17, 27, .1))
-
     .tab-item
       flex: 1
       text-align: center
