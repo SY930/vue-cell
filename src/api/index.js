@@ -6,6 +6,9 @@ import axios from 'axios'
 axios.interceptors.response.use((res)=>{
   return res.data;
 });
-export let getGoods = () =>{
+export let getSeller = () =>{
   return axios.get('/api/seller')
 };
+export let getGoods = () =>{
+  return axios.get('/api/goods')
+}
