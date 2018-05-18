@@ -18,7 +18,7 @@
 
 <script>
   import Header from './components/header/header.vue'
-  import {getGoods} from './api'
+  import {getSeller} from './api'
   const ERROR = 0;
   export default{
 
@@ -32,7 +32,7 @@
     },
     methods:{
       getData(){
-        getGoods().then((res)=>{
+        getSeller().then((res)=>{
           if(res.errno==ERROR){
             this.seller = res.data;
           }
