@@ -1,6 +1,6 @@
 <template>
   <div class="shopcart">
-    <div class="content">
+    <div class="content" @click="toggleList">
       <div class="content-left">
         <div class="logo-wrapper">
           <div class="logo" :class="{'highLight':totalCount>0}">
@@ -32,12 +32,33 @@
         </transition>
         </div>
       </div>
-
-
+    <transition name="fold">
+      <div class="shopcart-list" v-show="listShow">
+  <div class="list-header">
+    <h1 class="title">购物车</h1>
+    <span class="empty">清空</span>
+  </div>
+  <div class="list-content">
+    <ul>
+      <li class="food" v-for="food in selectFoods">
+        <span class="name">{{food.name}}</span>
+        <div class="price">
+          <span>￥{{food.price*food.count}}</span>
+        </div>
+        <div class="cartcontrol-wrapper">
+          <cartControl :food="food"></cartControl>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+    </transition>
 
   </div>
 </template>
 <script>
+
+  import cartControl from '../cartcontrol/cartcontrol.vue'
   export default {
     props: {
       selectFoods: {
@@ -67,14 +88,15 @@
           {show: false},
           {show: false},
         ],
-        dropBalls:[]
+        dropBalls:[],
+        fold:true,//表示是否展开折叠的状态
       }
     },
     created(){
 
     },
     methods: {
-        //el是点击添加的那个按钮
+        //el是点击添加的那个按钮 、、小球动画执行
         drop(el){
           //console.log(el);
           for(let i=0;i<this.balls.length;i++){
@@ -125,9 +147,15 @@
           ball.show = false;
           el.style.display = 'none';
         }
+      },
+      //点击购物车展开或者折叠
+      toggleList(){
+        if(!this.totalCount){
+            return
+        }
+        this.fold = !this.fold
+       // console.log(this.fold);
       }
-
-
     },
     computed: {
       totalPrice(){
@@ -160,10 +188,23 @@
         } else {
           return 'enough'
         }
+      },
+      //购物车显示隐藏
+      listShow(){
+          if(!this.totalCount){//购物车没有的时候
+              this.fold = true;
+           // console.log('没有购物车的时候===='+this.fold);
+            return false
+          }
+          let show = !this.fold;
+       // console.log(show);
+        return show;
       }
-
     },
     mounted(){
+    },
+    components:{
+      cartControl
     }
   }
 </script>
@@ -256,17 +297,28 @@
           &.enough
             background: #00b43c
             color: #fff
-  .ball-container
-    .ball
-      position: fixed
-      left: 32px
-      bottom: 22px
-      z-index: 200
-      transition: all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
-      .inner
-        width: 16px
-        height: 16px
-        border-radius: 50%
-        background: rgb(0, 160, 220)
-        transition: all 0.4s linear
+    .ball-container
+      .ball
+        position: fixed
+        left: 32px
+        bottom: 22px
+        z-index: 200
+        transition: all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+        .inner
+          width: 16px
+          height: 16px
+          border-radius: 50%
+          background: rgb(0, 160, 220)
+          transition: all 0.4s linear
+    .shopcart-list
+      position: absolute
+      left :0
+      top:0
+      z-index :-1
+      width :100%
+      transform: translate3d(0, -100%, 0)
+      &.fold-enter-active, &.fold-leave-active
+        transition: all 0.5s
+      &.fold-enter, &.fold-leave-active
+        transform: translate3d(0, 0, 0)
 </style>
