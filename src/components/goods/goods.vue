@@ -111,7 +111,7 @@
                       this._calculateHeight();
                     });
 
-                }
+                 }
               }).catch((err)=>{
                 console.log(err);
               })
@@ -154,7 +154,10 @@
         _drop(event){
         //子组件发射(cart_add)事件，父组件监听到事件之后把target传进来，再调用shopcart的（drop）方法,这样就实现了把cartcontral里面的dom元素(点击的那个元素)传递给了父组件，然后父组件调用子组件shopcart方法，把target传递到子组件，所以子组件就可以拿到这个元素，我们就可以获取这个(cartcontral)元素的位置了
          // console.log(event.target);
-          this.$refs.shopCart.drop(event.target)
+          this.$nextTick(()=>{
+            this.$refs.shopCart.drop(event.target)
+          })//体验优化，异步执行下落动画
+
         }
 
       }
