@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="goods">
     <div class="menu-wrapper" ref="menuWrapper">
       <ul>
@@ -14,7 +15,7 @@
         <li v-for="item in goods" class="food-list food-list-hook">
           <h1 class="title">{{item.name}}</h1>
           <ul>
-            <li v-for="food in item.foods" class="food-item border_1px">
+            <li @click="selectFood(food,$event)" v-for="food in item.foods" class="food-item border_1px">
               <div class="icon">
                 <img width="57" height="57" :src="food.icon" alt="">
               </div>
@@ -39,12 +40,17 @@
 
    <shopCart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods" ref="shopCart"></shopCart>
   </div>
+
+      <Food :food="selectedFood" ref="food"></Food>
+
+  </div>
 </template>
 <script>
   import {getGoods} from '../../api'
   import BScroll from 'better-scroll'
   import shopCart from '../../components/shopCart/shopcart.vue'
   import cartControl from '../../components/cartcontrol/cartcontrol.vue'
+  import Food from '../../components/food/food.vue'
   const ERR_OK = 0;
   export default{
       props:{
@@ -54,13 +60,15 @@
       },
       components:{
         shopCart,
-        cartControl
+        cartControl,
+        Food
       },
       data(){
         return {
             goods:[],
             listHeight:[],//每一个li区块的高度
-            scrollY:0
+            scrollY:0,
+          selectedFood:{}
         }
       },
     computed:{
@@ -85,9 +93,10 @@
                   }
 
               })
-          })
+          });
         return foods
-      }
+      },
+
     },
       created(){
         this.getDate();
@@ -126,7 +135,7 @@
               click:true,
                 probeType:3//希望bscroll在滚动的时候，能实时告诉我们位置
             });
-            this.foodsScroll.on('scroll',(pos)=>{//事件回调函数的参数是一个位置
+              this.foodsScroll.on('scroll',(pos)=>{//事件回调函数的参数是一个位置
               //console.log(pos.y);
               this.scrollY = Math.abs(Math.round(pos.y));
             })
@@ -158,6 +167,13 @@
             this.$refs.shopCart.drop(event.target)
           })//体验优化，异步执行下落动画
 
+        },
+        selectFood(food,event){
+          if(!event._constructed){
+            return
+          }
+          this.selectedFood = food;
+          this.$refs.food.show()
         }
 
       }
