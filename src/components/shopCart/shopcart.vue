@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="shopcart">
     <div class="content" @click="toggleList">
       <div class="content-left">
@@ -13,7 +14,7 @@
         <div class="price" :class="{'highLight':totalPrice>0}">￥{{totalPrice}}元</div>
         <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
       </div>
-      <div class="content-right">
+      <div class="content-right" @click.stop.prevent="pay">
         <div class="pay" :class="payClass">
           {{payDesc}}
         </div>
@@ -21,44 +22,49 @@
     </div>
 
     <!--动画中的小球-->
-      <div class="ball-container">
-        <div v-for="ball in balls" >
+    <div class="ball-container">
+      <div v-for="ball in balls">
         <transition
           name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop"
         >
-      <div  v-show="ball.show" class="ball">
-        <div class="inner inner-hook"></div>
-      </div>
+          <div v-show="ball.show" class="ball">
+            <div class="inner inner-hook"></div>
+          </div>
         </transition>
-        </div>
       </div>
+    </div>
     <transition name="fold">
       <div class="shopcart-list" v-show="listShow">
-  <div class="list-header">
-    <h1 class="title">购物车</h1>
-    <span class="empty">清空</span>
-  </div>
-  <div class="list-content">
-    <ul>
-      <li class="food" v-for="food in selectFoods">
-        <span class="name">{{food.name}}</span>
-        <div class="price">
-          <span>￥{{food.price*food.count}}</span>
+        <div class="list-header">
+          <h1 class="title">购物车</h1>
+          <span class="empty" @click="clearAll">清空</span>
         </div>
-        <div class="cartcontrol-wrapper">
-          <cartControl :food="food"></cartControl>
+        <div class="list-content" ref="listContent">
+          <ul>
+            <li class="food" v-for="food in selectFoods">
+              <span class="name">{{food.name}}</span>
+              <div class="price">
+                <span>￥{{food.price*food.count}}</span>
+              </div>
+              <div class="cartcontrol-wrapper">
+                <cartControl :food="food"></cartControl>
+              </div>
+            </li>
+          </ul>
         </div>
-      </li>
-    </ul>
-  </div>
-</div>
+      </div>
     </transition>
 
+  </div>
+    <transition name="fade">
+  <div class="list-mark" @click="hideList" v-show="listShow"></div>
+    </transition>
   </div>
 </template>
 <script>
 
   import cartControl from '../cartcontrol/cartcontrol.vue'
+  import BScroll from 'better-scroll'
   export default {
     props: {
       selectFoods: {
@@ -88,27 +94,27 @@
           {show: false},
           {show: false},
         ],
-        dropBalls:[],
-        fold:true,//表示是否展开折叠的状态
+        dropBalls: [],
+        fold: true,//表示是否展开折叠的状态
       }
     },
     created(){
 
     },
     methods: {
-        //el是点击添加的那个按钮 、、小球动画执行
-        drop(el){
-          //console.log(el);
-          for(let i=0;i<this.balls.length;i++){
-              let ball = this.balls[i];
-              if(!ball.show){
-                  ball.show = true;//关键点：能触发动画
-                  ball.el = el;//保留dom元素，算位置的时候用
-                this.dropBalls.push(ball);
-                return
-              }
+      //el是点击添加的那个按钮 、、小球动画执行
+      drop(el){
+        //console.log(el);
+        for (let i = 0; i < this.balls.length; i++) {
+          let ball = this.balls[i];
+          if (!ball.show) {
+            ball.show = true;//关键点：能触发动画
+            ball.el = el;//保留dom元素，算位置的时候用
+            this.dropBalls.push(ball);
+            return
           }
-        },
+        }
+      },
       beforeDrop(el) {
         //console.log(el);//小球的dom
 
@@ -116,7 +122,7 @@
         while (count--) {
           let ball = this.balls[count];
           if (ball.show) {
-           // console.log(ball.el);//点击的事件源
+            // console.log(ball.el);//点击的事件源
             let rect = ball.el.getBoundingClientRect();//获取元素相对于视口的位置；rect返回的left和top就是相对视口的偏移
             let x = rect.left - 32;
             let y = -(window.innerHeight - rect.top - 22);
@@ -150,11 +156,25 @@
       },
       //点击购物车展开或者折叠
       toggleList(){
-        if(!this.totalCount){
-            return
+        if (!this.totalCount) {
+          return
         }
         this.fold = !this.fold
-       // console.log(this.fold);
+        // console.log(this.fold);
+      },
+      clearAll(){
+          this.selectFoods.forEach((food)=>{
+              food.count = 0
+          })
+      },
+      hideList(){
+         this.fold = true;
+      },
+      pay(){
+          if(this.totalPrice<this.minPrice){
+              return
+          }
+          window.alert(`支付${this.totalPrice}元`)
       }
     },
     computed: {
@@ -191,24 +211,38 @@
       },
       //购物车显示隐藏
       listShow(){
-          if(!this.totalCount){//购物车没有的时候
-              this.fold = true;
-           // console.log('没有购物车的时候===='+this.fold);
-            return false
-          }
-          let show = !this.fold;
-       // console.log(show);
+        if (!this.totalCount) {//购物车没有的时候
+          this.fold = true;
+          // console.log('没有购物车的时候===='+this.fold);
+          return false
+        }
+        let show = !this.fold;
+        // console.log(show);
+        if (show) {
+          //数据变了，dom的变化并没有立即生效
+          this.$nextTick(() => {
+            if (!this.scroll) {
+              this.scroll = new BScroll(this.$refs.listContent, {
+                click: true
+              })
+            } else {
+              this.scroll.refresh()
+            }
+
+          })
+        }
         return show;
       }
     },
     mounted(){
     },
-    components:{
+    components: {
       cartControl
     }
   }
 </script>
 <style scoped lang="stylus" type="text/stylus">
+  @import "../../common/stylus/mixin.styl"
   .shopcart
     position: fixed;
     left: 0;
@@ -312,13 +346,70 @@
           transition: all 0.4s linear
     .shopcart-list
       position: absolute
-      left :0
-      top:0
-      z-index :-1
-      width :100%
+      left: 0
+      top: 0
+      z-index: -1
+      width: 100%
       transform: translate3d(0, -100%, 0)
       &.fold-enter-active, &.fold-leave-active
         transition: all 0.5s
       &.fold-enter, &.fold-leave-active
         transform: translate3d(0, 0, 0)
+      .list-header
+        height: 40px
+        line-height: 40px
+        padding: 0 18px
+        background: #f3f5f7
+        border-bottom: 1px solid rgba(7, 17, 27, .1)
+        .title
+          float: left
+          font-size: 14px
+          color: rgb(7, 17, 27)
+        .empty
+          float: right
+          font-size: 12px
+          color: rgb(0, 160, 220)
+
+      .list-content
+        padding: 0 18px
+        max-height: 217px
+        overflow: hidden
+        background: #ffffff
+        .food
+          position: relative
+          padding: 12px 0
+          box-sizing: border-box
+          border-1px(rgba(7, 17, 27, .1))
+          .name
+            line-height: 24px
+            font-size: 14px
+            color: rgb(7, 17, 27)
+          .price
+            position: absolute
+            right: 90px
+            bottom: 12px
+            line-height: 24px
+            font-size: 14px
+            font-weight: 700
+            color: rgb(120, 20, 20)
+          .cartcontrol-wrapper
+            position: absolute
+            right: 0
+            bottom: 6px
+
+
+  .list-mark
+    position :fixed
+    top:0
+    left :0
+    width :100%
+    height :100%
+    z-index :40
+    background :rgba(7,17,27,.6)
+    backdrop-filter:blur(10px)
+  .fade-enter-active,.fade-leave-active
+    transition:opacity .5s
+  .fade-enter,.fade-leave-to
+    opacity :0
+    background :rgba(7,17,27,0)
 </style>
