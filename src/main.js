@@ -14,7 +14,7 @@ new Vue({
   render: h => h(App),
   /*components: { App },
   template: '<App/>'*/
-  data: {
+  /*data: {
     eventHub: new Vue()
-  },
+  },*/
 });
