@@ -47,7 +47,7 @@
                 <span>￥{{food.price*food.count}}</span>
               </div>
               <div class="cartcontrol-wrapper">
-                <cartControl :food="food"></cartControl>
+                <cartControl @add="addFood" :food="food"></cartControl>
               </div>
             </li>
           </ul>
@@ -102,6 +102,9 @@
 
     },
     methods: {
+      addFood(target){
+          this.drop(target)
+      },
       //el是点击添加的那个按钮 、、小球动画执行
       drop(el){
         //console.log(el);
