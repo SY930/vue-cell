@@ -126,7 +126,7 @@
       },
       selectRating(type){
         this.selectType = type;
-        console.log(this.selectType);
+        //console.log(this.selectType);
         this.$nextTick(() => {//异步更新dom之后再重新刷新scroll
           this.scroll.refresh();
         });

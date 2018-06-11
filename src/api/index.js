@@ -12,3 +12,6 @@ export let getSeller = () =>{
 export let getGoods = () =>{
   return axios.get('/api/goods')
 }
+export let getRatings = () =>{
+  return axios.get('/api/ratings')
+}
