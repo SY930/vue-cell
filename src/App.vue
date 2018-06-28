@@ -12,11 +12,14 @@
         <router-link to="/seller">商家</router-link>
       </div>
     </div>
+    <keep-alive>
     <router-view :seller="seller"></router-view>
+    </keep-alive>
   </div>
 </template>
 
 <script>
+  import {urlParse} from './common/js/util'
   import Header from './components/header/header.vue'
   import {getSeller} from './api'
   const ERROR = 0;
@@ -24,7 +27,12 @@
 
       data(){
         return{
-          seller :{}
+          seller :{
+           id: (() => {
+              let queryParam = urlParse();
+              return queryParam.id;
+            })()
+          }
         }
       },
     created(){
@@ -32,9 +40,10 @@
     },
     methods:{
       getData(){
-        getSeller().then((res)=>{
+        getSeller(this.seller.id).then((res)=>{
           if(res.errno==ERROR){
-            this.seller = res.data;
+            this.seller = Object.assign({}, this.seller, res.data);
+            console.log(this.seller.id);
           }
 
         }).catch((err)=>{
